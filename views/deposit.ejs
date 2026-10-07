@@ -1,33 +1,73 @@
-<div class="mb-4">
-  <label class="block text-gray-300 mb-2 font-semibold">ငွေပေးချေမှု နည်းလမ်း ရွေးချယ်ပါ</label>
-  <select id="paymentMethod" name="method" class="w-full p-2.5 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:border-blue-500" onchange="updatePaymentDetails()">
-    <option value="KBZPay">KBZ Pay</option>
-    <option value="WavePay">Wave Money</option>
-    <option value="UABPay">UAB Pay</option>
-    <option value="AYAPay">AYA Pay</option>
-  </select>
-</div>
+<!DOCTYPE html>
+<html lang="my">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ငွေဖြည့်မည် (Deposit)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen p-4 flex justify-center items-center">
 
-<!-- Account Information Display -->
-<div id="paymentInfo" class="p-4 bg-gray-800 rounded-lg border border-gray-700 mb-4 text-center">
-  <p id="accountType" class="font-bold text-blue-400 text-lg">KBZ Pay အကောင့်</p>
-  <p id="accountNumber" class="text-2xl font-bold my-2 text-yellow-400 tracking-wider">09763442881</p>
-  <p id="accountName" class="text-sm text-gray-300">Account Name: Safe Zone Topup</p>
-</div>
+  <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 w-full max-w-md">
+    <div class="flex justify-between items-center mb-6 border-b border-gray-700 pb-3">
+      <h1 class="text-xl font-bold text-white">💳 ငွေဖြည့်မည် (Deposit)</h1>
+      <a href="/" class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded text-gray-200">🏠 Home</a>
+    </div>
 
-<script>
-  const paymentData = {
-    KBZPay: { name: "KBZ Pay အကောင့်", number: "09763442881", accName: "Mg Pyae Phyo Kyaw" },
-    WavePay: { name: "Wave Money အကောင့်", number: "09763442881", accName: "Mg Pyae Phyo Kyaw" },
-    UABPay: { name: "UAB Pay အကောင့်", number: "09763442881", accName: "Mg Pyae Phyo Kyaw" },
-    AYAPay: { name: "AYA Pay အကောင့်", number: "09763442881", accName: "Mg Pyae Phyo Kyaw" }
-  };
+    <form action="/deposit" method="POST" class="space-y-4">
+      
+      <!-- Payment Method Selection -->
+      <div>
+        <label class="block text-sm text-gray-300 mb-2 font-semibold">ငွေပေးချေမှု နည်းလမ်း ရွေးချယ်ပါ</label>
+        <select id="paymentMethod" name="method" class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-700 focus:outline-none focus:border-blue-500" onchange="updatePaymentDetails()">
+          <option value="KBZPay">KBZ Pay</option>
+          <option value="WavePay">Wave Money</option>
+          <option value="UABPay">UAB Pay</option>
+          <option value="AYAPay">AYA Pay</option>
+        </select>
+      </div>
 
-  function updatePaymentDetails() {
-    const selected = document.getElementById('paymentMethod').value;
-    const info = paymentData[selected];
-    document.getElementById('accountType').innerText = info.name;
-    document.getElementById('accountNumber').innerText = info.number;
-    document.getElementById('accountName').innerText = "Account Name: " + info.accName;
-  }
-</script>
+      <!-- Account Info Display Box -->
+      <div id="paymentInfo" class="p-4 bg-gray-900 rounded-lg border border-gray-700 text-center space-y-1">
+        <p id="accountType" class="font-bold text-blue-400 text-base">KBZ Pay အကောင့်</p>
+        <p id="accountNumber" class="text-2xl font-extrabold text-yellow-400 tracking-wider my-1">09763442881</p>
+        <p id="accountName" class="text-xs text-gray-400">Account Name: Safe Zone Topup</p>
+      </div>
+
+      <!-- Deposit Amount -->
+      <div>
+        <label class="block text-sm text-gray-300 mb-1">ငွေဖြည့်လိုသည့် ပမာဏ (Ks)</label>
+        <input type="number" name="amount" placeholder="eg. 5000" class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-700 focus:outline-none focus:border-blue-500" required>
+      </div>
+
+      <!-- Transaction Last 6 Digits -->
+      <div>
+        <label class="block text-sm text-gray-300 mb-1">လုပ်ငန်းစဉ်အမှတ် (နောက်ဆုံး ၆ လုံး)</label>
+        <input type="text" name="transactionLast6Digits" maxlength="6" placeholder="eg. 123456" class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-700 focus:outline-none focus:border-blue-500 font-mono" required>
+      </div>
+
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition mt-4">
+        ငွေဖြည့်တောင်းဆိုမည်
+      </button>
+    </form>
+  </div>
+
+  <script>
+    const paymentData = {
+      KBZPay: { name: "KBZ Pay အကောင့်", number: "09763442881", accName: "Safe Zone Topup" },
+      WavePay: { name: "Wave Money အကောင့်", number: "09763442881", accName: "Safe Zone Topup" },
+      UABPay: { name: "UAB Pay အကောင့်", number: "09763442881", accName: "Safe Zone Topup" },
+      AYAPay: { name: "AYA Pay အကောင့်", number: "09763442881", accName: "Safe Zone Topup" }
+    };
+
+    function updatePaymentDetails() {
+      const selected = document.getElementById('paymentMethod').value;
+      const info = paymentData[selected];
+      document.getElementById('accountType').innerText = info.name;
+      document.getElementById('accountNumber').innerText = info.number;
+      document.getElementById('accountName').innerText = "Account Name: " + info.accName;
+    }
+  </script>
+
+</body>
+</html>
