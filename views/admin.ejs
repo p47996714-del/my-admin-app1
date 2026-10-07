@@ -1,38 +1,146 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Admin Panel</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Safe Zone Game Topup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    form { display: flex; gap: 10px; margin-bottom: 20px; }
-    input { padding: 8px; }
-    button { padding: 8px 16px; cursor: pointer; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    body { background-color: #12131C; color: #fff; font-family: sans-serif; }
   </style>
 </head>
-<body>
-  <h1>Admin Panel</h1>
-  <form action="/admin/add" method="POST">
-    <input type="text" name="name" placeholder="Name" required>
-    <input type="number" name="price" placeholder="Price" required>
-    <input type="text" name="description" placeholder="Description">
-    <button type="submit">Add Item</button>
-  </form>
-  <table>
-    <tr><th>Name</th><th>Price</th><th>Description</th><th>Action</th></tr>
-    <% items.forEach(item => { %>
-      <tr>
-        <td><%= item.name %></td>
-        <td>$<%= item.price %></td>
-        <td><%= item.description %></td>
-        <td>
-          <form action="/admin/delete/<%= item._id %>" method="POST">
-            <button type="submit">Delete</button>
-          </form>
-        </td>
-      </tr>
-    <% }) %>
-  </table>
+<body class="max-w-md mx-auto min-h-screen pb-16">
+
+  <!-- AUTH SECTION (REGISTER / LOGIN) -->
+  <div id="auth-section" class="p-6 mt-10 bg-[#1E202E] rounded-xl shadow-lg mx-4">
+    <h2 id="auth-title" class="text-2xl font-bold text-center mb-6">🔐 Login</h2>
+    <form id="auth-form" onsubmit="handleAuth(event)">
+      <input type="text" id="name" placeholder="အမည်" class="hidden w-full p-3 mb-3 bg-[#12131C] border border-gray-700 rounded text-white">
+      <input type="text" id="phone" placeholder="ဖုန်းနံပါတ်" required class="w-full p-3 mb-3 bg-[#12131C] border border-gray-700 rounded text-white">
+      <input type="password" id="password" placeholder="စကားဝှက်" required class="w-full p-3 mb-4 bg-[#12131C] border border-gray-700 rounded text-white">
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 p-3 rounded font-bold">ဝင်မည်</button>
+    </form>
+    <p class="text-center text-sm text-gray-400 mt-4 cursor-pointer" onclick="toggleAuth()">
+      <span id="toggle-text">အကောင့်မရှိသေးပါလား? Register လုပ်ပါ</span>
+    </p>
+  </div>
+
+  <!-- DASHBOARD SECTION -->
+  <div id="dashboard-section" class="hidden p-4">
+    <!-- User Info Header -->
+    <div class="bg-[#1E202E] p-4 rounded-xl mb-4 flex justify-between items-center">
+      <div>
+        <h3 id="user-display-name" class="font-bold text-lg">---</h3>
+        <p id="user-display-phone" class="text-xs text-gray-400">---</p>
+      </div>
+      <div class="text-right">
+        <span class="text-xs text-gray-400">လက်ကျန်ငွေ</span>
+        <div class="text-xl font-bold text-blue-400"><span id="user-balance">0</span> Ks</div>
+      </div>
+    </div>
+
+    <!-- Deposit Button -->
+    <button onclick="openDepositModal()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 p-3 rounded-xl font-bold mb-6">
+      💳 ငွေဖြည့်မည် (Deposit)
+    </button>
+
+    <!-- Games Section -->
+    <h3 class="font-bold text-lg mb-3">🎮 ဂိမ်းများ</h3>
+    <div class="grid grid-cols-2 gap-3">
+      <div class="bg-[#1E202E] p-3 rounded-xl text-center border border-gray-800">
+        <div class="h-20 bg-blue-900/40 rounded mb-2 flex items-center justify-center font-bold">MLBB</div>
+        <p class="font-bold text-sm">Mobile Legends</p>
+      </div>
+      <div class="bg-[#1E202E] p-3 rounded-xl text-center border border-gray-800">
+        <div class="h-20 bg-yellow-900/40 rounded mb-2 flex items-center justify-center font-bold">PUBG</div>
+        <p class="font-bold text-sm">PUBG Mobile</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEPOSIT MODAL -->
+  <div id="deposit-modal" class="hidden fixed inset-0 bg-black/80 flex items-end justify-center p-4">
+    <div class="bg-[#1E202E] w-full max-w-md p-6 rounded-t-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-lg">💳 ငွေဖြည့်ရန်</h3>
+        <button onclick="closeDepositModal()" class="text-gray-400">✕</button>
+      </div>
+      <form onsubmit="handleDeposit(event)">
+        <input type="number" id="dep-amount" placeholder="ပမာဏ (Ks)" required class="w-full p-3 mb-3 bg-[#12131C] border border-gray-700 rounded text-white">
+        <select id="dep-method" class="w-full p-3 mb-4 bg-[#12131C] border border-gray-700 rounded text-white">
+          <option value="KBZPay">KBZ Pay</option>
+          <option value="WavePay">Wave Pay</option>
+          <option value="AYA">AYA Pay</option>
+        </select>
+        <button type="submit" class="w-full bg-green-600 p-3 rounded font-bold">ငွေဖြည့်မည်</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let isRegister = false;
+    let currentUser = null;
+
+    function toggleAuth() {
+      isRegister = !isRegister;
+      document.getElementById('name').classList.toggle('hidden', !isRegister);
+      document.getElementById('auth-title').innerText = isRegister ? '📝 Register' : '🔐 Login';
+      document.getElementById('toggle-text').innerText = isRegister ? 'အကောင့်ရှိပြီးသားလား? Login ဝင်ပါ' : 'အကောင့်မရှိသေးပါလား? Register လုပ်ပါ';
+    }
+
+    async function handleAuth(e) {
+      e.preventDefault();
+      const endpoint = isRegister ? '/api/register' : '/api/login';
+      const body = {
+        name: document.getElementById('name').value,
+        phone: document.getElementById('phone').value,
+        password: document.getElementById('password').value
+      };
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        currentUser = data.user;
+        showDashboard();
+      } else {
+        alert(data.message);
+      }
+    }
+
+    function showDashboard() {
+      document.getElementById('auth-section').classList.add('hidden');
+      document.getElementById('dashboard-section').classList.remove('hidden');
+      document.getElementById('user-display-name').innerText = currentUser.name || 'User';
+      document.getElementById('user-display-phone').innerText = currentUser.phone;
+      document.getElementById('user-balance').innerText = currentUser.balance;
+    }
+
+    function openDepositModal() { document.getElementById('deposit-modal').classList.remove('hidden'); }
+    function closeDepositModal() { document.getElementById('deposit-modal').classList.add('hidden'); }
+
+    async function handleDeposit(e) {
+      e.preventDefault();
+      const body = {
+        userId: currentUser._id,
+        userName: currentUser.name || currentUser.phone,
+        amount: Number(document.getElementById('dep-amount').value),
+        method: document.getElementById('dep-method').value
+      };
+
+      const res = await fetch('/api/deposit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      alert(data.message);
+      closeDepositModal();
+    }
+  </script>
 </body>
 </html>
