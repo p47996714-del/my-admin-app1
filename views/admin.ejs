@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    form { display: flex; gap: 10px; margin-bottom: 20px; }
+    input { padding: 8px; }
+    button { padding: 8px 16px; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+  </style>
+</head>
+<body>
+  <h1>Admin Panel</h1>
+  <form action="/admin/add" method="POST">
+    <input type="text" name="name" placeholder="Name" required>
+    <input type="number" name="price" placeholder="Price" required>
+    <input type="text" name="description" placeholder="Description">
+    <button type="submit">Add Item</button>
+  </form>
+  <table>
+    <tr><th>Name</th><th>Price</th><th>Description</th><th>Action</th></tr>
+    <% items.forEach(item => { %>
+      <tr>
+        <td><%= item.name %></td>
+        <td>$<%= item.price %></td>
+        <td><%= item.description %></td>
+        <td>
+          <form action="/admin/delete/<%= item._id %>" method="POST">
+            <button type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+  </table>
+</body>
+</html>
