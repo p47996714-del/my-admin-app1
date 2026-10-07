@@ -6,12 +6,16 @@ const path = require('path');
 
 const app = express();
 
-// MongoDB Connection String (Render Environment Variable မှ ရယူမည်)
-const MONGO_URI = process.env.MONGO_URI || 'YOUR_MONGODB_ATLAS_URL_HERE';
+// MongoDB Connection String
+const MONGO_URI = process.env.MONGO_URI;
 
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('MongoDB Connected Successfully'))
-  .catch(err => console.log('MongoDB Connection Error:', err));
+if (MONGO_URI) {
+  mongoose.connect(MONGO_URI)
+    .then(() => console.log('MongoDB Connected Successfully'))
+    .catch(err => console.log('MongoDB Connection Error:', err));
+} else {
+  console.log('Warning: MONGO_URI is not defined in Environment Variables.');
+}
 
 // View Engine Setup
 app.set('view engine', 'ejs');
@@ -22,38 +26,42 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Persistent Session (၁၄ ရက်ကြာ Login မှတ်ထားပေးမည်)
-app.use(session({
+// Persistent Session (MONGO_URI ရှိမှ Store ကို သုံးမည်)
+const sessionConfig = {
   secret: 'safezonetopupsecretkey123',
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: MONGO_URI,
-    ttl: 14 * 24 * 60 * 60 // 14 Days
-  }),
   cookie: {
     maxAge: 14 * 24 * 60 * 60 * 1000 // 14 Days
   }
-}));
+};
 
-// Global User Variable for EJS Views
+if (MONGO_URI) {
+  sessionConfig.store = MongoStore.create({
+    mongoUrl: MONGO_URI,
+    ttl: 14 * 24 * 60 * 60
+  });
+}
+
+app.use(session(sessionConfig));
+
+// Global User Variable for Views
 app.use((req, res, next) => {
-  res.locals.user = req.session.user || null;
+  res.locals.user = req.session ? req.session.user : null;
   next();
 });
 
 // Import Admin Routes
-const adminRoutes = require('./routes/admin');
-app.use('/', adminRoutes);
+try {
+  const adminRoutes = require('./routes/admin');
+  app.use('/', adminRoutes);
+} catch (e) {
+  console.log('Admin routes loading skipped or not found');
+}
 
-// Home Page Route
+// Default Home Route
 app.get('/', (req, res) => {
   res.render('app');
-});
-
-// Deposit Page Route
-app.get('/deposit', (req, res) => {
-  res.render('deposit');
 });
 
 const PORT = process.env.PORT || 3000;
