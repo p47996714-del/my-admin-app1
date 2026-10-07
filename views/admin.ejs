@@ -1,60 +1,178 @@
 <!DOCTYPE html>
-<html>
+<html lang="my">
 <head>
-  <title>Topup Admin Panel</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; background: #f0f2f5; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
-    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-    th { background: #007bff; color: white; }
-    .btn-approve { background: green; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Management Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <h1>Admin Management Panel</h1>
+<body class="bg-gray-900 text-gray-100 min-h-screen p-4 md:p-8">
 
-  <h2>💳 ငွေဖြည့်တောင်းဆိုမှုများ (Deposits)</h2>
-  <table>
-    <tr>
-      <th>User Name</th>
-      <th>Amount</th>
-      <th>Method</th>
-      <th>Status</th>
-      <th>Action</th>
-    </tr>
-    <% deposits.forEach(dep => { %>
-      <tr>
-        <td><%= dep.userName %></td>
-        <td><%= dep.amount %> Ks</td>
-        <td><%= dep.method %></td>
-        <td><strong><%= dep.status %></strong></td>
-        <td>
-          <% if(dep.status === 'Pending') { %>
-            <form action="/admin/approve-deposit/<%= dep._id %>" method="POST" style="margin:0;">
-              <button class="btn-approve">Approve & Add Balance</button>
-            </form>
-          <% } else { %>
-            Done
-          <% } %>
-        </td>
-      </tr>
-    <% }) %>
-  </table>
+  <div class="max-w-6xl mx-auto space-y-8">
+    <!-- Header Title -->
+    <div class="flex justify-between items-center border-b border-gray-700 pb-4">
+      <h1 class="text-2xl md:text-3xl font-bold text-white">⚙️ Admin Management Panel</h1>
+      <a href="/" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm transition">
+        🏠 Home သို့ပြန်သွားမည်
+      </a>
+    </div>
 
-  <h2>👥 User များ စာရင်း</h2>
-  <table>
-    <tr>
-      <th>Name</th>
-      <th>Phone</th>
-      <th>Balance</th>
-    </tr>
-    <% users.forEach(u => { %>
-      <tr>
-        <td><%= u.name || 'N/A' %></td>
-        <td><%= u.phone %></td>
-        <td><%= u.balance %> Ks</td>
-      </tr>
-    <% }) %>
-  </table>
+    <!-- 1. Deposits Section (ငွေဖြည့်တောင်းဆိုမှုများ) -->
+    <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+      <h2 class="text-xl font-bold text-white mb-4">💳 ငွေဖြည့်တောင်းဆိုမှုများ (Deposits)</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-gray-300 border-collapse">
+          <thead class="bg-gray-700 text-gray-200">
+            <tr>
+              <th class="p-3 border-b border-gray-600">User Name</th>
+              <th class="p-3 border-b border-gray-600">Amount</th>
+              <th class="p-3 border-b border-gray-600">Method</th>
+              <th class="p-3 border-b border-gray-600">Txn Last 6 Digits</th>
+              <th class="p-3 border-b border-gray-600">Status</th>
+              <th class="p-3 border-b border-gray-600">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (typeof deposits !== 'undefined' && deposits.length > 0) { %>
+              <% deposits.forEach(dep => { %>
+                <tr class="border-b border-gray-700 hover:bg-gray-750">
+                  <td class="p-3"><%= dep.userId ? dep.userId.name : 'Unknown' %></td>
+                  <td class="p-3 font-semibold text-green-400"><%= dep.amount %> Ks</td>
+                  <td class="p-3 text-yellow-400"><%= dep.method %></td>
+                  <td class="p-3 font-mono text-gray-300"><%= dep.transactionLast6Digits %></td>
+                  <td class="p-3">
+                    <span class="px-2 py-1 text-xs rounded font-bold 
+                      <%= dep.status === 'Approved' ? 'bg-green-800 text-green-200' : (dep.status === 'Rejected' ? 'bg-red-800 text-red-200' : 'bg-yellow-800 text-yellow-200') %>">
+                      <%= dep.status %>
+                    </span>
+                  </td>
+                  <td class="p-3 flex space-x-2">
+                    <% if (dep.status === 'Pending') { %>
+                      <form action="/admin/deposit/approve/<%= dep._id %>" method="POST" class="inline">
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded">Approve</button>
+                      </form>
+                      <form action="/admin/deposit/reject/<%= dep._id %>" method="POST" class="inline">
+                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 rounded">Reject</button>
+                      </form>
+                    <% } else { %>
+                      <span class="text-xs text-gray-500">Done</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="6" class="p-4 text-center text-gray-400">ငွေဖြည့်တောင်းဆိုချက်များ မရှိသေးပါ။</td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 2. Game Items & Pricing Section (ဂိမ်းပစ္စည်းများနှင့် ဈေးနှုန်းများ စီမံရန်) -->
+    <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+      <h2 class="text-xl font-bold text-white mb-4">🎮 ဂိမ်းပစ္စည်းများနှင့် ဈေးနှုန်းများ စီမံရန်</h2>
+
+      <!-- Add New Item Form -->
+      <form action="/admin/add-item" method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 bg-gray-900 p-4 rounded-lg">
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">ဂိမ်းအမျိုးအစား</label>
+          <select name="game" class="w-full p-2 bg-gray-800 text-white rounded border border-gray-700 focus:outline-none focus:border-blue-500" required>
+            <option value="MLBB">Mobile Legends (MLBB)</option>
+            <option value="PUBG">PUBG Mobile</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">ပစ္စည်းအမည်</label>
+          <input type="text" name="title" placeholder="eg. 86 Diamonds" class="w-full p-2 bg-gray-800 text-white rounded border border-gray-700 focus:outline-none focus:border-blue-500" required>
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">ဈေးနှုန်း (Ks)</label>
+          <input type="number" name="price" placeholder="eg. 3500" class="w-full p-2 bg-gray-800 text-white rounded border border-gray-700 focus:outline-none focus:border-blue-500" required>
+        </div>
+        <div class="flex items-end">
+          <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition">
+            + ပစ္စည်းအသစ်ထည့်မည်
+          </button>
+        </div>
+      </form>
+
+      <!-- Items Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-gray-300 border-collapse">
+          <thead class="bg-gray-700 text-gray-200">
+            <tr>
+              <th class="p-3 border-b border-gray-600">ဂိမ်း</th>
+              <th class="p-3 border-b border-gray-600">ပစ္စည်းအမည်</th>
+              <th class="p-3 border-b border-gray-600">ဈေးနှုန်း</th>
+              <th class="p-3 border-b border-gray-600">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (typeof items !== 'undefined' && items.length > 0) { %>
+              <% items.forEach(item => { %>
+                <tr class="border-b border-gray-700 hover:bg-gray-750">
+                  <td class="p-3 font-semibold text-yellow-400"><%= item.game %></td>
+                  <td class="p-3"><%= item.title %></td>
+                  <td class="p-3 text-green-400 font-bold"><%= item.price %> Ks</td>
+                  <td class="p-3">
+                    <form action="/admin/delete-item/<%= item._id %>" method="POST" onsubmit="return confirm('ဖျက်ရန် သေချာပါသလား?');">
+                      <button type="submit" class="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 rounded">
+                        ဖျက်မည်
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="4" class="p-4 text-center text-gray-400">ဂိမ်းပစ္စည်းများ မရှိသေးပါ။ အထက်ပါ Form တွင် ထည့်သွင်းပါ။</td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 3. Registered Users Section (User များ စာရင်း) -->
+    <div class="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+      <h2 class="text-xl font-bold text-white mb-4">👥 User များ စာရင်း</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-gray-300 border-collapse">
+          <thead class="bg-gray-700 text-gray-200">
+            <tr>
+              <th class="p-3 border-b border-gray-600">Name</th>
+              <th class="p-3 border-b border-gray-600">Phone</th>
+              <th class="p-3 border-b border-gray-600">Role</th>
+              <th class="p-3 border-b border-gray-600">Balance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (typeof users !== 'undefined' && users.length > 0) { %>
+              <% users.forEach(u => { %>
+                <tr class="border-b border-gray-700 hover:bg-gray-750">
+                  <td class="p-3"><%= u.name %></td>
+                  <td class="p-3 font-mono"><%= u.phone %></td>
+                  <td class="p-3">
+                    <span class="px-2 py-0.5 text-xs rounded <%= u.role === 'admin' ? 'bg-red-900 text-red-200' : 'bg-gray-700 text-gray-300' %>">
+                      <%= u.role || 'user' %>
+                    </span>
+                  </td>
+                  <td class="p-3 text-green-400 font-bold"><%= u.balance %> Ks</td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="4" class="p-4 text-center text-gray-400">User များ မရှိသေးပါ။</td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
 </body>
 </html>
